@@ -1,8 +1,4 @@
-import {
-    getCustomStyleProperty,
-    setCustomStyleProperty,
-    updateCustomStyleProperty,
-} from "./helper.js";
+import { getCustomStyleProperty, setCustomStyleProperty, updateCustomStyleProperty } from "./helper.js";
 
 const dinoElement = document.querySelector("[data-dino]");
 
@@ -17,70 +13,72 @@ let currentFrameTime;
 let YVelocity;
 
 export function setupDino() {
-    isDinoJumping = false;
-    dinoFrame = 0;
-    currentFrameTime = 0;
-    YVelocity = 0;
-    setCustomStyleProperty(dinoElement, "--dino-bottom", 0);
+  isDinoJumping = false;
+  dinoFrame = 0;
+  currentFrameTime = 0;
+  YVelocity = 0;
+  setCustomStyleProperty(dinoElement, "--dino-bottom", 0);
 
-    document.removeEventListener("keydown", onDinoJump);
-    document.addEventListener("keydown", onDinoJump);
+  document.removeEventListener("keydown", onDinoJump);
+  document.addEventListener("keydown", onDinoJump);
+
+  document.removeEventListener("touchstart", onDinoJump);
+  document.addEventListener("touchstart", onDinoJump);
 }
 
 export function updateDino(delta, speedScale) {
-    handleRun(delta, speedScale);
-    handleJump(delta);
+  handleRun(delta, speedScale);
+  handleJump(delta);
 }
 
 export function getDinoRects() {
-    return dinoElement.getBoundingClientRect();
+  return dinoElement.getBoundingClientRect();
 }
 
 export function setDinoLose() {
-    dinoElement.src = "./images/dinoLose.png";
+  dinoElement.src = "./images/dinoLose.png";
 }
 
 function handleRun(delta, speedScale) {
-    if (isDinoJumping) {
-        dinoElement.src = "./images/dinoStationary.png";
-        return;
+  if (isDinoJumping) {
+    dinoElement.src = "./images/dinoStationary.png";
+    return;
+  }
+
+  if (currentFrameTime >= FRAME_TIME) {
+    dinoFrame = (dinoFrame + 1) % DINO_FRAME_COUNT;
+
+    if (dinoFrame === 0) {
+      dinoElement.src = "./images/dinoRunZero.png";
+    } else if (dinoFrame === 1) {
+      dinoElement.src = "./images/dinoRunOne.png";
     }
 
-    if (currentFrameTime >= FRAME_TIME) {
-        dinoFrame = (dinoFrame + 1) % DINO_FRAME_COUNT;
+    currentFrameTime -= FRAME_TIME;
+  }
 
-        if (dinoFrame === 0) {
-            dinoElement.src = "./images/dinoRunZero.png";
-        } else if (dinoFrame === 1) {
-            dinoElement.src = "./images/dinoRunOne.png";
-        }
-
-        currentFrameTime -= FRAME_TIME;
-    }
-
-    currentFrameTime += delta * speedScale;
+  currentFrameTime += delta * speedScale;
 }
 
 function handleJump(delta) {
-    if (!isDinoJumping) {
-        return;
-    }
+  if (!isDinoJumping) {
+    return;
+  }
 
-    updateCustomStyleProperty(dinoElement, "--dino-bottom", YVelocity * delta);
+  updateCustomStyleProperty(dinoElement, "--dino-bottom", YVelocity * delta);
 
-    if (getCustomStyleProperty(dinoElement, "--dino-bottom") <= 0) {
-        setCustomStyleProperty(dinoElement, "--dino-bottom", 0);
-        isDinoJumping = false;
-    }
+  if (getCustomStyleProperty(dinoElement, "--dino-bottom") <= 0) {
+    setCustomStyleProperty(dinoElement, "--dino-bottom", 0);
+    isDinoJumping = false;
+  }
 
-    YVelocity -= GRAVITY * delta;
+  YVelocity -= GRAVITY * delta;
 }
 
 function onDinoJump(event) {
-    if (event.code !== "Space" || isDinoJumping) {
-        return;
-    }
+  if (isDinoJumping) return;
+  if (!event.touches && event.code.toLowerCase() !== "space") return;
 
-    YVelocity = JUMP_SPEED;
-    isDinoJumping = true;
+  YVelocity = JUMP_SPEED;
+  isDinoJumping = true;
 }
